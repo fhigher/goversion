@@ -9,6 +9,8 @@
 5. GOPATH, GOPROXY自行定义
 
 ### gover命令：
+    'help': 查看帮助信息
+    
     'init'：初始化Go多版本管理仓库目录。
 
     'list'：查看当前安装的所有Go版本。
