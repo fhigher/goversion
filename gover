@@ -28,8 +28,8 @@ function use_ver() {
 
     # 验证软连接指向
     if [ -L "$CURRENT" ]; then
-        target=$(readlink -f $CURRENT)
-        echo "$CURRENT -> $target"
+        # target=$(readlink -f $CURRENT)
+        # echo "$CURRENT -> $target"
         echo "已切换到: $1 版本"
     else
         echo "切换版本失败......"
@@ -37,19 +37,31 @@ function use_ver() {
 }
 
 function list_ver() {
+    RED=$(tput setaf 1)
+    RESET=$(tput sgr0)
+    target=$(readlink -f $CURRENT)
+    current_ver=$(basename $target)
     dirs=`ls -d $GOVERREPO/* | grep -v "current"`
     for dirname in ${dirs[*]}
     do
-        echo $(basename $dirname)
+        ver=$(basename $dirname)
+        if [ $ver == $current_ver ]; then
+            echo $ver"${RED}[*]${RESET}"
+        else
+            echo $ver
+        fi
     done
 }
 
 function show_help() {
-    echo "当前GOROOT："$GOROOT
-    echo "gover命令列表：
-'init'：初始化Go多版本管理仓库目录。
-'list'：查看当前安装的所有Go版本。
-'use 1.24.1'：切换到指定的Go版本。" 
+    # echo "当前GOROOT："$GOROOT
+    echo "
+gover-v1.0.0 help：
+
+    'init'：初始化Go多版本管理仓库目录。
+    'list'：查看当前安装的所有Go版本。
+    'use 1.24.1'：切换到指定的Go版本。
+" 
 }
 
 command=$1
