@@ -1,0 +1,80 @@
+#!/bin/bash
+
+GOVERREPO="$HOME/.goversion"
+CURRENT="$GOVERREPO/current"
+
+function init_repo() {
+    if [ ! -d $GOVERREPO ]; then
+        mkdir -p $GOVERREPO
+        echo "GO多版本管理仓库目录创建成功：'$GOVERREPO'"
+    else 
+        echo "GO多版本管理仓库目录已存在：'$GOVERREPO'"
+    fi
+}
+
+function use_ver() {
+    if [ -z "$1" ]; then
+        echo "参数错误：必须指定一个版本号"
+        exit
+    fi
+    
+    if [ ! -d $CURRENT ]; then
+        # CURRENT不存在，直接创建软链接
+        ln -s $GOVERREPO/$1 $CURRENT
+    else 
+        # 已存在则修改软链接
+        ln -sF $GOVERREPO/$1 $CURRENT
+    fi
+
+    # 验证软连接指向
+    if [ -L "$CURRENT" ]; then
+        target=$(readlink -f $CURRENT)
+        echo "$CURRENT -> $target"
+        echo "已切换到: $1 版本"
+    else
+        echo "切换版本失败......"
+    fi
+}
+
+function list_ver() {
+    dirs=`ls -d $GOVERREPO/* | grep -v "current"`
+    for dirname in ${dirs[*]}
+    do
+        echo $(basename $dirname)
+    done
+}
+
+function show_help() {
+    echo "当前GOROOT："$GOROOT
+    echo "gover命令列表：
+'init'：初始化Go多版本管理仓库目录。
+'list'：查看当前安装的所有Go版本。
+'use 1.24.1'：切换到指定的Go版本。" 
+}
+
+command=$1
+if [ -z "$command" ]; then
+    show_help
+    exit
+fi
+
+case "$command" in
+'init')
+    init_repo
+    exit
+    ;;
+'list')
+    list_ver
+    exit
+    ;;
+'use')
+    use_ver $2
+    exit
+    ;;
+'help')
+    show_help
+    ;;
+*)
+    echo "无效的命令"
+esac
+
