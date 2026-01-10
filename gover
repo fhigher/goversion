@@ -17,24 +17,61 @@ function download_ver() {
         echo "参数错误：必须指定一个版本号"
         exit
     fi
+
+    if [ -d $GOVERREPO/$1 ]; then
+        echo "$1 版本已存在"
+        exit
+    fi
+
     local os=$(uname -s | tr '[:upper:]' '[:lower:]')
     local arch=$(uname -m)
     local baseurl="https://dl.google.com/go/go$1.$os-$arch.tar.gz"
     local filename=$GOVERREPO/$1.tar.gz
+
     wget -O $filename -c $baseurl
     tar -xzf $filename -C $GOVERREPO
+
     if [ ! -d $GOVERREPO/go ]; then
         echo "解压后的go目录不存在"
         exit
     fi
+
     mv $GOVERREPO/go $GOVERREPO/$1
     rm $filename
+
     if [ ! -d $GOVERREPO/$1 ]; then
         echo "安装 $1 版本失败，可尝试手动安装"
     else
         echo "$1 版本安装成功"
         use_ver $1
     fi
+}
+
+function remove_ver() {
+    if [ -z "$1" ]; then
+        echo "参数错误：必须指定一个版本号"
+        exit
+    fi
+
+    if [ ! -d $GOVERREPO/$1 ]; then
+        echo "$1 版本不存在，无需卸载"
+        exit
+    fi
+
+    target=$(readlink -f $CURRENT)
+    current_ver=$(basename $target)
+    if [ $1 == $current_ver ]; then
+        echo "$1 是正在使用的版本，请切换为其它版本后再卸载"
+        exit
+    fi
+
+    rm -r $GOVERREPO/$1
+
+    if [ ! -d $GOVERREPO/$1 ]; then
+        echo "$1 版本卸载成功"
+    else
+        echo "$1 版本卸载失败"
+    fi 
 }
 
 function use_ver() {
@@ -55,7 +92,7 @@ function use_ver() {
     if [ -L "$CURRENT" ]; then
         # target=$(readlink -f $CURRENT)
         # echo "$CURRENT -> $target"
-        echo "已切换到: $1 版本"
+        echo "已切换到 $1 版本"
     else
         echo "切换版本失败......"
     fi
@@ -85,7 +122,8 @@ gover-v1.0.0 help：
 
     'help': 查看帮助信息
     'init': 初始化Go多版本管理仓库目录。
-    'install': 下载指定的Go版本。
+    'install': 安装指定的Go版本。
+    'remove': 卸载指定的Go版本。
     'list': 查看当前安装的所有Go版本。
     'use 1.24.1': 切换到指定的Go版本。
 " 
@@ -104,6 +142,10 @@ case "$command" in
     ;;
 'install')
     download_ver $2
+    exit
+    ;;
+'remove')
+    remove_ver $2
     exit
     ;;
 'list')
