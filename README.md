@@ -3,10 +3,11 @@
 
 使用步骤：
 1. 使用gover init 创建仓库，初始时执行一次
-2. 下载适合当前系统，指定版本的go安装包，解压到仓库，并重命名为版本号，例：1.24.3
+2. 执行gover install 1.*.*, 安装对应Go版本, 如1.24.3
 3. 执行gover use 1.24.3，指定使用该版本
 4. 设置环境变量GOROOT为 "仓库路径/current"
 5. GOPATH, GOPROXY自行定义
+6. 执行go version验证
 
 ### gover命令：
     'help': 查看帮助信息
